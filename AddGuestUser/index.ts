@@ -53,7 +53,6 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
       body: "Please pass a userId  on the query string or in the request body"
     };
   }
-
   // Run Main Function
   async function run():Promise<void> {
       try {
@@ -75,16 +74,14 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
                     "inviteRedirectUrl": "https://URL-TO-SITE",
                     "sendInvitationMessage": false
                 })
-            }
+            }        
+           const invitationResponse = await request(options);
             
-             const response = await request(options);
-
-
-              // Add addUser to O365 Group 
-             const result = JSON.parse(response.body);
+             if (invitationResponse.statusCode == 201){
+               // Add addUser to O365 Group 
+               const result = JSON.parse(invitationResponse.body);
              const invitedUserId: string  = result.invitedUser.id;
 
-             if (response.statusCode == 201){
                 let options = {
                     method: 'POST',
                     resolveWithFullResponse: true,
