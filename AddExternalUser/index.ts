@@ -55,6 +55,7 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
       body: "Please pass a userId abd GroupId on the query string or in the request body"
     };
   }
+
   // Run Main Function
   async function run():Promise<IReturnResp> {
       try {
@@ -76,11 +77,12 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
                     "inviteRedirectUrl": "https://URL-TO-SITE",
                     "sendInvitationMessage": false
                 })
-            }        
+            }  
+           // POST request      
            const invitationResponse = await request(options);
              // If Invite Created 
              if (invitationResponse.statusCode == 201){
-               // Add addUser to O365 Group 
+            // Add addUser to O365 Group 
              const invitation:MicrosoftGraph.Invitation = JSON.parse(invitationResponse.body);
              const invitedUserId: string  = invitation.invitedUser.id;
 
@@ -96,8 +98,9 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
                         "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${invitedUserId}`
                     })
                 };
+                // POST request
                 const response = await request(options);  
-                return { groupId : groupId, invitation: invitation};      
+                return { groupId : groupId, invitation: invitation };      
              }
         }
       } catch (error) {
