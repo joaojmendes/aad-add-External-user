@@ -3,15 +3,14 @@
 
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
 import * as request from "request-promise";
-import * as sgMail from '@sendgrid/mail';
-
+import * as MicrosoftGraph from "@microsoft/microsoft-graph-types"
  
 // Env Vars
 const TENANT = getEnviromentVariable("TENANT");
 const CLIENT_ID = getEnviromentVariable("CLIENT_ID");
 const CLIENT_SECRET = getEnviromentVariable("CLIENT_SECRET");
 const GROUP_ID = getEnviromentVariable("GROUP_ID");
-const SENDGRID_KEY = getEnviromentVariable("SENDGRID_KEY");
+
 
 // Interfaces
 interface IAADToken {
@@ -20,6 +19,12 @@ interface IAADToken {
     ext_expires_in: number;
     access_token: string;
   }
+
+// response of function 
+interface IReturnResp {
+  groupId: string;
+  invitation: MicrosoftGraph.Invitation,
+}
 
 // Add Guest User to a Group 
 const httpTrigger: AzureFunction = async function(context: Context, req: HttpRequest): Promise<void> {
@@ -31,30 +36,27 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
   if (userId && groupId) {
     try {
       // run Main function 
-        await run();
+     const returnResp: IReturnResp = await run();
         context.log(`User ${userId} was add to group id : ${GROUP_ID} `);
-        // Send Email 
-        await sendEmail();
         context.res = {
             // status: 200, /* Defaults to 200 */          
-            body: `User ${userId} was add to group id : ${GROUP_ID} `
+            body: returnResp
           };
     } catch (error) {
         context.res = {
             status: 400,
             body: error.message
           };
-    }
-    
+    }  
   } else {
-    context.log("Please pass a userId  on the query string or in the request body")
+    context.log("Please pass a userId and GroupId on the query string or in the request body")
     context.res = {
       status: 400,
-      body: "Please pass a userId  on the query string or in the request body"
+      body: "Please pass a userId abd GroupId on the query string or in the request body"
     };
   }
   // Run Main Function
-  async function run():Promise<void> {
+  async function run():Promise<IReturnResp> {
       try {
         // Get Access Token
         const accessToken = await getAccessToken();
@@ -76,11 +78,11 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
                 })
             }        
            const invitationResponse = await request(options);
-            
+             // If Invite Created 
              if (invitationResponse.statusCode == 201){
                // Add addUser to O365 Group 
-               const result = JSON.parse(invitationResponse.body);
-             const invitedUserId: string  = result.invitedUser.id;
+             const invitation:MicrosoftGraph.Invitation = JSON.parse(invitationResponse.body);
+             const invitedUserId: string  = invitation.invitedUser.id;
 
                 let options = {
                     method: 'POST',
@@ -94,7 +96,8 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
                         "@odata.id": `https://graph.microsoft.com/v1.0/directoryObjects/${invitedUserId}`
                     })
                 };
-                const response = await request(options);        
+                const response = await request(options);  
+                return { groupId : groupId, invitation: invitation};      
              }
         }
       } catch (error) {
@@ -103,24 +106,7 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
       }
   }
 
-  // Send Confirmation Email.
-  async function sendEmail(){
-      try {
-          sgMail.setApiKey(SENDGRID_KEY);
-          const fromUser = 'joao.mendes@devjjm.onmicrosoft.com';
-          const msg = {
-            to: userId,
-            from: fromUser,
-            subject: 'Access to Teams ',
-            text: 'Access to Teams Confirm Message',
-            html: '<strong>Access to Teams Confirm Message</strong>',
-          };
-          
-          await sgMail.send(msg);
-      } catch (error) {
-          context.log(error);
-      }
-  }
+  
   // Get Access Token 
   async function getAccessToken(): Promise<string> {
     try {
