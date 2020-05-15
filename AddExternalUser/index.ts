@@ -29,12 +29,18 @@ interface IReturnResp {
 // Add Guest User to a Group 
 const httpTrigger: AzureFunction = async function(context: Context, req: HttpRequest): Promise<void> {
   context.log("HTTP trigger function processed a request.");
-  const userId = req.query.userId || (req.body && req.body.userId);
-  const groupId = req.query.groupId || (req.body && req.body.groupId);
+  const userId = (req.body && req.body.userId);
+  const groupId =  (req.body && req.body.groupId);
+  const userName =  (req.body && req.body.userName);
+  
+
+let invitedUserMessageInfo: MicrosoftGraph.InvitedUserMessageInfo = {} as MicrosoftGraph.InvitedUserMessageInfo;
 
  // check request parameters
   if (userId && groupId) {
     try {
+
+      
       // run Main function 
      const returnResp: IReturnResp = await run();
         context.log(`User ${userId} was add to group id : ${GROUP_ID} `);
@@ -60,8 +66,10 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
   async function run():Promise<IReturnResp> {
       try {
         // Get Access Token
-        const accessToken = await getAccessToken();
+        const accessToken:string = await getAccessToken();
+       
         if (accessToken){
+          const groupUrl:string = await getGroupUrl();
            // Create Invitation 
            let options = {
                 method: 'POST',
@@ -72,10 +80,10 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
                     'content-type': 'application/json'
                 },
                 body: JSON.stringify({
-                    "invitedUserDisplayName": userId,
+                    "invitedUserDisplayName": userName,
                     "invitedUserEmailAddress": userId,
-                    "inviteRedirectUrl": "https://URL-TO-SITE",
-                    "sendInvitationMessage": false
+                    "inviteRedirectUrl": groupUrl,
+                    "sendInvitationMessage": false             
                 })
             }  
            // POST request      
@@ -109,7 +117,28 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
       }
   }
 
-  
+  async function getGroupUrl(): Promise<string> {
+      try {
+        const accessToken = await getAccessToken();
+        let options = {
+          method: 'GET',
+          resolveWithFullResponse: true,
+          url: `https://graph.microsoft.com/v1.0/groups/${groupId}/sites/root/weburl`,
+          headers: {
+              'Authorization': 'Bearer ' + accessToken,
+              'content-type': 'application/json'
+          }          
+      };
+      // POST request
+      const response = await request(options);  
+
+      return  JSON.parse(response.body).value;   
+      } catch (error) {
+        context.log(error);
+        throw new Error(error);
+      }
+  }
+
   // Get Access Token 
   async function getAccessToken(): Promise<string> {
     try {

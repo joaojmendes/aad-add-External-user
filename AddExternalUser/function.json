@@ -16,5 +16,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/AADAddGuestUser/index.js"
+  "scriptFile": "../dist/AddExternalUser/index.js"
 }
