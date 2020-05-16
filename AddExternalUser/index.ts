@@ -33,9 +33,6 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
   const groupId =  (req.body && req.body.groupId);
   const userName =  (req.body && req.body.userName);
   
-
-let invitedUserMessageInfo: MicrosoftGraph.InvitedUserMessageInfo = {} as MicrosoftGraph.InvitedUserMessageInfo;
-
  // check request parameters
   if (userId && groupId) {
     try {
@@ -80,7 +77,7 @@ let invitedUserMessageInfo: MicrosoftGraph.InvitedUserMessageInfo = {} as Micros
                     'content-type': 'application/json'
                 },
                 body: JSON.stringify({
-                    "invitedUserDisplayName": userName,
+                    "invitedUserDisplayName": userName ? userName : userId,
                     "invitedUserEmailAddress": userId,
                     "inviteRedirectUrl": groupUrl,
                     "sendInvitationMessage": false             
