@@ -6,6 +6,6 @@
     "TENANT": "<tenant>",
     "CLIENT_ID": "<clientId",
     "CLIENT_SECRET": "clientSecret",
-    "GROUP_ID": "<groupId",
+    "GROUP_ID": "<groupId"
   }
 }
