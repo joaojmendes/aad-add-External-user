@@ -36,8 +36,6 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
  // check request parameters
   if (userId && groupId) {
     try {
-
-      
       // run Main function 
      const returnResp: IReturnResp = await run();
         context.log(`User ${userId} was add to group id : ${GROUP_ID} `);
@@ -52,10 +50,10 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
           };
     }  
   } else {
-    context.log("Please pass a userId and GroupId on the query string or in the request body")
+    context.log("Please pass a userId and GroupId in the request body")
     context.res = {
       status: 400,
-      body: "Please pass a userId abd GroupId on the query string or in the request body"
+      body: "Please pass a userId abd GroupId in the request body"
     };
   }
 
@@ -66,7 +64,7 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
         const accessToken:string = await getAccessToken();
        
         if (accessToken){
-          const groupUrl:string = await getGroupUrl();
+          const groupUrl:string = await getGroupUrl(accessToken);
            // Create Invitation 
            let options = {
                 method: 'POST',
@@ -114,9 +112,9 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
       }
   }
 
-  async function getGroupUrl(): Promise<string> {
+  async function getGroupUrl(accessToken:string): Promise<string> {
       try {
-        const accessToken = await getAccessToken();
+       
         let options = {
           method: 'GET',
           resolveWithFullResponse: true,
