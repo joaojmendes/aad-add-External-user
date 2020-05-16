@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "TENANT": "devjjm.onmicrosoft.com",
+    "CLIENT_ID": "64c451f2-abcb-44fd-b583-c48c9605d5f8",
+    "CLIENT_SECRET": "ps@CxPoosAvID]yvAqf@TX/QERE8Z474",
+    "GROUP_ID": "5b38f068-0fe2-429a-b6de-2c92ab86336c",
+    "SENDGRID_KEY": "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",
+    "FROM_EMAIL": "joao.mendes@devjjm.onmicrosoft.com"
+  }
+}
