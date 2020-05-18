@@ -38,7 +38,7 @@ const httpTrigger: AzureFunction = async function(context: Context, req: HttpReq
     try {
       // run Main function 
      const returnResp: IReturnResp = await run();
-        context.log(`User ${userId} was add to group id : ${GROUP_ID} `);
+        context.log(`User ${userId} was added to group id : ${GROUP_ID} `);
         context.res = {
             // status: 200, /* Defaults to 200 */          
             body: returnResp
